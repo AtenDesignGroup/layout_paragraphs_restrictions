@@ -1,0 +1,7 @@
+services:
+  layout_paragraphs_restrictions:
+    class: \Drupal\layout_paragraphs_restrictions\EventSubscriber\LayoutParagraphsRestrictions
+    arguments:
+      - '@messenger'
+    tags:
+      - { name: 'event_subscriber' }

@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Contains Layout Paragraphs Restrictions module.
+ */
+
+/**
+ * Implements hook_preprocess_layout_paragraphs_builder().
+ */
+function layout_paragraphs_restrictions_preprocess_layout_paragraphs_builder(&$variables) {
+
+  $restrictions = \Drupal::moduleHandler()->invokeAll('layout_paragraphs_restrictions');
+  $layout = $variables['layout_paragraphs_layout'];
+  $variables['#attached']['drupalSettings']['lpBuilder']['restrictions'][$layout->id()] = $restrictions;
+  $variables['#attached']['library'][] = 'layout_paragraphs_restrictions/restrictions';
+
+}

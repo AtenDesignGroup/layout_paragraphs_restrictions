@@ -1,0 +1,5 @@
+restrictions:
+  js:
+    js/restrictions.js: {}
+  dependencies:
+    - core/jquery
