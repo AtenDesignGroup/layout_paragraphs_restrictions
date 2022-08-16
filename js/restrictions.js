@@ -25,22 +25,6 @@
               });
 
               if (restrictions.length) {
-                const $children = $(target).children('.js-lpb-component');
-                const count = $children.length;
-                const existingTypes = $children
-                  .toArray()
-                  .map((i) => i.getAttribute('data-type'))
-                  .filter((a, b, c) => c.indexOf(a) === b);
-
-                if (existingTypes.length) {
-                  restrictions = restrictions.filter(
-                    (v) => existingTypes.reduce((_p, c) => {
-                      const max = v.max || 10000;
-                      return Object.keys(v.components).includes(c) && count < max;
-                    }, true)
-                  );
-                }
-
                 const allowedTypes = restrictions.reduce(
                   (p, c) => p.concat([...Object.keys(c.components)]), []
                 ).filter(
