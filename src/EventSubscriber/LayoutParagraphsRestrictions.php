@@ -76,40 +76,6 @@ class LayoutParagraphsRestrictions implements EventSubscriberInterface {
 
     if ($restrictions) {
 
-      if ($parent_uuid) {
-        $parent_component = $layout->getComponentByUuid($parent_uuid);
-        $parent_section = $layout->getLayoutSection($parent_component->getEntity());
-        $sibling_components = $parent_section->getComponentsForRegion($region);
-      }
-      else {
-        $sibling_components = $layout->getRootComponents();
-      }
-
-      // Build a list of existing component types for this layout/region.
-      $count = count($sibling_components);
-      $existing_types = array_reduce($sibling_components, function ($carry, $item) {
-        $carry[$item->getEntity()->bundle()] = TRUE;
-        return $carry;
-      }, []);
-
-      // Filter restrictions to those that match existing components types.
-      if ($existing_types) {
-        $restrictions = array_filter(
-          $restrictions,
-          function ($group) use ($existing_types, $count) {
-            if ($group['restrictive']) {
-              $a = array_keys($group['components']);
-              $b = array_keys($existing_types);
-              $max = $group['max'] ?? 10000;
-              return (!array_diff($b, $a) && $count < $max);
-            }
-            else {
-              return TRUE;
-            }
-          }
-        );
-      }
-
       // Build a list of allowed component types from the filtered restrictions.
       $allowed = array_reduce($restrictions, function ($carry, $item) {
         foreach (array_keys($item['components']) as $allowed_type) {
@@ -122,10 +88,6 @@ class LayoutParagraphsRestrictions implements EventSubscriberInterface {
         if (!$allowed[$key]) {
           unset($types[$key]);
         }
-      }
-
-      if (!count($types)) {
-        $this->messenger->addMessage(t('There are no components available for this region.'));
       }
 
       $event->setTypes($types);
