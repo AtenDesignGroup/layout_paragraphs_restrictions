@@ -55,22 +55,29 @@ class LayoutParagraphsRestrictions implements EventSubscriberInterface {
       $parent_component = $layout->getComponentByUuid($parent_uuid);
       $section = $layout->getLayoutSection($parent_component->getEntity());
       $layout_id = $section->getLayoutId();
+      $sibling_components = $section->getComponentsForRegion($region);
     }
     else {
       $layout_id = '';
+      $sibling_components = $layout->getRootComponents();
     }
+    $count = count($sibling_components);
 
-    $all_restrictions = \Drupal::moduleHandler()->invokeAll('layout_paragraphs_restrictions');
+    $restrictions = \Drupal::moduleHandler()->invokeAll('layout_paragraphs_restrictions');
 
-    // Filter restrictions to those that apply to this layout and region.
+    // Filter to matching layouts.
     $restrictions = array_filter(
-      $all_restrictions,
-      function ($restriction) use ($region, $layout_id) {
-        $applies_to_layout = empty($restriction['layouts']) ||
-          (is_array($restriction['layouts']) && in_array($layout_id, $restriction['layouts']));
-        $applies_to_region = empty($restriction['regions']) ||
-          (is_array($restriction['regions']) && in_array($region, $restriction['regions']));
-        return $applies_to_layout && $applies_to_region;
+      $restrictions,
+      function ($restrictions) use ($layout_id) {
+        return (self::restrictByProperty($restrictions['layouts'] ?? NULL, $layout_id));
+      }
+    );
+
+    // Filter to matching regions.
+    $restrictions = array_filter(
+      $restrictions,
+      function ($restrictions) use ($region) {
+        return (self::restrictByProperty($restrictions['regions'] ?? NULL, $region));
       }
     );
 
@@ -93,6 +100,38 @@ class LayoutParagraphsRestrictions implements EventSubscriberInterface {
       $event->setTypes($types);
     }
 
+  }
+
+  /**
+   * Returns true if the restriction $property is undefined or contains $value.
+   *
+   * @param null|array $property
+   *   The restriction property.
+   * @param null|string $value
+   *   The value to check.
+   *
+   * @return bool
+   *   True if matches.
+   */
+  private static function restrictByProperty($property, $value) {
+    return empty($property) ||
+      (is_array($property) &&
+        in_array($value, $property));
+  }
+
+  /**
+   * Returns true if the restriction $property is greater than the $value.
+   *
+   * @param null|array $property
+   *   The restriction property.
+   * @param null|string $value
+   *   The value to check.
+   *
+   * @return bool
+   *   True if matches.
+   */
+  private static function restrictByCount($property, $value) {
+    return empty($property) || $value < $property;
   }
 
 }
